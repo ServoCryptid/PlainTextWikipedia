@@ -36,10 +36,14 @@ def analyze_chunk(text):
 def save_article(article, savedir):
     doc = analyze_chunk(article)
     if doc:
-        print('SAVING:', doc['title'])
-        filename = doc['id'] + '.json'
+        filename = doc['id'] + '.txt'
         with open(savedir + filename, 'w', encoding='utf-8') as outfile:
-            json.dump(doc, outfile, sort_keys=True, indent=1, ensure_ascii=False)
+            sentences = doc['text'].split('.')
+            for sentence in sentences:
+                if len(sentence)> 1:
+                    outfile.write(f"{sentence.strip()}\n")
+
+        outfile.close()
 
 
 def process_file_text(filename, savedir):
