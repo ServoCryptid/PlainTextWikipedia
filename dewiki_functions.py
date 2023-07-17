@@ -3,7 +3,7 @@ import json
 import re
 from html2text import html2text as htt
 import wikitextparser as wtp
-
+import os
 
 def dewiki(text):
     text = wtp.parse(text).plain_text()  # wiki to plaintext 
@@ -40,7 +40,7 @@ def save_article(article, savedir):
         with open(savedir + filename, 'w', encoding='utf-8') as outfile:
             sentences = doc['text'].split('.')
             for sentence in sentences:
-                if len(sentence)> 1:
+                if len(sentence) > 1:
                     outfile.write(f"{sentence.strip()}\n")
 
         outfile.close()
@@ -55,4 +55,22 @@ def process_file_text(filename, savedir):
             elif '</page>' in line:  # end of article
                 Thread(target=save_article, args=(article, savedir)).start()
             else:
-                article += line                
+                article += line
+
+
+def concat_files(path_folder):
+    # print(f"Files names: {os.listdir(path_folder)}")
+    print(f"Files count: {len(os.listdir(path_folder))}")
+
+    file_names = os.listdir(path_folder)
+    with open("small_wikipedia.txt", 'w') as outfile:
+        for fname in file_names:
+            try:
+                print(fname)
+                with open(path_folder + fname, 'r') as infile:
+                    outfile.write(infile.read())
+                infile.close()
+            except Exception as oops:
+                print(oops)
+                continue
+    outfile.close()
