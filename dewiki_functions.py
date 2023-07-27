@@ -4,9 +4,10 @@ import re
 from html2text import html2text as htt
 import wikitextparser as wtp
 import os
+from smart_open import open
 
 def dewiki(text):
-    text = wtp.parse(text).plain_text()  # wiki to plaintext 
+    text = wtp.parse(text).plain_text()  # wiki to plaintext
     text = htt(text)  # remove any HTML
     text = text.replace('\\n',' ')  # replace newlines
     text = re.sub('\s+', ' ', text)  # replace excess whitespace
@@ -48,7 +49,7 @@ def save_article(article, savedir):
 
 def process_file_text(filename, savedir):
     article = ''
-    with open(filename, 'r', encoding='utf-8') as infile:
+    with open(filename, 'r') as infile:
         for line in infile:
             if '<page>' in line:
                 article = ''
