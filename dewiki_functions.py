@@ -51,14 +51,17 @@ def process_file_text(filename, savedir, no_articles=100000):
     article = ''
     articles_count = 0
     with open(filename, 'r') as infile:
-        for line in infile and articles_count < no_articles:
-            if '<page>' in line:
-                article = ''
-            elif '</page>' in line:  # end of article
-                articles_count += 1
-                Thread(target=save_article, args=(article, savedir)).start()
+        for line in infile:
+            if articles_count < no_articles:
+                if '<page>' in line:
+                    article = ''
+                elif '</page>' in line:  # end of article
+                    articles_count += 1
+                    Thread(target=save_article, args=(article, savedir)).start()
+                else:
+                    article += line
             else:
-                article += line
+                break
 
 
 def concat_files(path_folder):
