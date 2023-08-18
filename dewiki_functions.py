@@ -47,13 +47,15 @@ def save_article(article, savedir):
         outfile.close()
 
 
-def process_file_text(filename, savedir):
+def process_file_text(filename, savedir, no_articles=100000):
     article = ''
+    articles_count = 0
     with open(filename, 'r') as infile:
-        for line in infile:
+        for line in infile and articles_count < no_articles:
             if '<page>' in line:
                 article = ''
             elif '</page>' in line:  # end of article
+                articles_count += 1
                 Thread(target=save_article, args=(article, savedir)).start()
             else:
                 article += line
@@ -64,7 +66,7 @@ def concat_files(path_folder):
     print(f"Files count: {len(os.listdir(path_folder))}")
 
     file_names = os.listdir(path_folder)
-    with open("small_wikipedia.txt", 'w') as outfile:
+    with open("wikipedia.txt", 'w') as outfile:
         for fname in file_names:
             try:
                 print(fname)
