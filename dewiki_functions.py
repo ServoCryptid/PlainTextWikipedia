@@ -44,28 +44,20 @@ def save_article(article, savedir):
             filename = savedir + doc['id'] + '.txt'
             s3.put_object(Body=bytes(doc['text'].encode('utf-8')), Bucket=bucket_name, Key=filename)
 
-        print('DONE')
-
     except Exception as oops:
         print(f"exception at save_article: {oops}")
 
 
-def process_file_text(filename, savedir, no_articles=2):
+def process_file_text(filename, savedir):
     article = ''
-    articles_count = 0
     with open(filename, 'r') as infile:
         for line in infile:
-            if articles_count < no_articles:
-                if '<page>' in line:
-                    article = ''
-                elif '</page>' in line:  # end of article
-                    articles_count += 1
-                    Thread(target=save_article, args=(article, savedir)).start()
-                else:
-                    article += line
+            if '<page>' in line:
+                article = ''
+            elif '</page>' in line:  # end of article
+                Thread(target=save_article, args=(article, savedir)).start()
             else:
-                break
-
+                article += line
 
 def concat_files(path_folder):
     # print(f"Files names: {os.listdir(path_folder)}")
