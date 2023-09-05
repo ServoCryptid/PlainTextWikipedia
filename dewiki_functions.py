@@ -5,6 +5,7 @@ from html2text import html2text as htt
 import wikitextparser as wtp
 import os
 from smart_open import open
+import boto3
 
 def dewiki(text):
     text = wtp.parse(text).plain_text()  # wiki to plaintext
@@ -35,19 +36,21 @@ def analyze_chunk(text):
 
 
 def save_article(article, savedir):
-    doc = analyze_chunk(article)
-    if doc:
-        filename = doc['id'] + '.txt'
-        with open(savedir + filename, 'w', encoding='utf-8') as outfile:
-            sentences = doc['text'].split('.')
-            for sentence in sentences:
-                if len(sentence) > 1:
-                    outfile.write(f"{sentence.strip()}\n")
+    try:
+        s3 = boto3.client('s3')
+        bucket_name = ('upcars-wikipedia-embeddings')
+        doc = analyze_chunk(article)
+        if doc:
+            filename = savedir + doc['id'] + '.txt'
+            s3.put_object(Body=bytes(doc['text'].encode('utf-8')), Bucket=bucket_name, Key=filename)
 
-        outfile.close()
+        print('DONE')
+
+    except Exception as oops:
+        print(f"exception at save_article: {oops}")
 
 
-def process_file_text(filename, savedir, no_articles=100000):
+def process_file_text(filename, savedir, no_articles=2):
     article = ''
     articles_count = 0
     with open(filename, 'r') as infile:
