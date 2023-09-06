@@ -8,10 +8,10 @@ s3_save_dir = r'wikipedia_text/processed_files/'
 # s3_file = 's3://upcars-wikipedia-embeddings/wikipedia_text/enwiki-20230701-pages-articles-multistream.xml'
 
 if __name__ == '__main__':
-    start = time.time()
-    process_file_text(s3_file, s3_save_dir)
-    print(f"Finished in {(time.time() - start)/60} minutes")
-
     # start = time.time()
-    # concat_files(json_save_dir)
+    # process_file_text(s3_file, s3_save_dir)
     # print(f"Finished in {(time.time() - start)/60} minutes")
+
+    start = time.time()
+    concat_files(s3_save_dir)
+    print(f"Finished in {(time.time() - start)/60} minutes")

@@ -4,7 +4,7 @@ import re
 from html2text import html2text as htt
 import wikitextparser as wtp
 import os
-from smart_open import open
+from smart_open import open, smart_open
 import boto3
 
 def dewiki(text):
@@ -59,19 +59,36 @@ def process_file_text(filename, savedir):
             else:
                 article += line
 
-def concat_files(path_folder):
-    # print(f"Files names: {os.listdir(path_folder)}")
-    print(f"Files count: {len(os.listdir(path_folder))}")
 
-    file_names = os.listdir(path_folder)
-    with open("wikipedia.txt", 'w') as outfile:
-        for fname in file_names:
-            try:
-                print(fname)
-                with open(path_folder + fname, 'r') as infile:
-                    outfile.write(infile.read())
-                infile.close()
-            except Exception as oops:
-                print(oops)
-                continue
-    outfile.close()
+def concat_files(path_folder):
+    s3_client = boto3.client('s3')
+    bucket_name = ('upcars-wikipedia-embeddings')
+    paginator = s3_client.get_paginator('list_objects_v2')
+    response = paginator.paginate(Bucket=bucket_name, Prefix=path_folder, PaginationConfig={'PageSize': 100})
+
+    articles_count = 0
+
+    with open('wikipedia.txt', 'w') as file: # we just create the empty file to append on it later
+        pass
+
+    for page in response:
+        print("getting page ...")
+        files = page.get('Contents')
+        articles_count += len(files)
+
+        print(f"Current files count: {articles_count}")
+
+        with open('wikipedia.txt', 'a') as outfile:
+            for file in files:
+                if ".txt" in file['Key']:
+                    # print(f"Current file: {file['Key']}")
+                    with smart_open('s3://'+bucket_name+'/'+file['Key'], 'r', errors='ignore') as infile:
+                        article = infile.read()
+                        sentences = article.split('.')
+                        for sentence in sentences:
+                            outfile.write(sentence + '\n')
+
+                    infile.close()
+
+        outfile.close()
+
